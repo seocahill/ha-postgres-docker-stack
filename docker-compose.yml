@@ -1,0 +1,144 @@
+version: '3.1'
+services:
+
+  haproxy:
+    image: haproxy:alpine
+    ports:
+        - "5000:5000"
+        - "5001:5001"
+    secrets: 
+      - haproxy_cfg
+    networks:
+      - apps
+      - dbs
+    command:
+      - haproxy
+      - -f 
+      - /run/secrets/haproxy_cfg
+  
+  etcdnode1:
+    image: quay.io/coreos/etcd:v3.1.2
+    volumes:
+      - etcd_data:/etcd_data
+    networks: 
+      - dbs
+    entrypoint: etcd
+    command:
+      - -name
+      - etcdnode1
+      - --data-dir
+      - /etcd_data
+      - -advertise-client-urls
+      - http://etcdnode1:2379
+      - -listen-client-urls
+      - http://0.0.0.0:2379
+      - -initial-advertise-peer-urls
+      - http://etcdnode1:2380
+      - -listen-peer-urls
+      - http://0.0.0.0:2380
+      - -initial-cluster
+      - etcdnode1=http://etcdnode1:2380
+
+  dbnode1:
+    build: .
+    image: patroni-dev
+    volumes:
+        - db-1-data:/data
+    secrets: 
+      - patroni_cfg
+      - aws_access_key_id
+      - aws_region
+      - aws_secret_access_key
+      - wale_s3_prefix
+    env_file:
+      - db-1.env
+    networks:
+      - dbs
+    entrypoint: 
+      - /bin/bash 
+      - entrypoint.sh
+    command: 
+      - patroni 
+      - /run/secrets/patroni_cfg
+
+  dbnode2:
+    image: patroni-dev
+    volumes:
+      - db-2-data:/data
+    secrets: 
+      - patroni_cfg
+      - aws_access_key_id
+      - aws_region
+      - aws_secret_access_key
+      - wale_s3_prefix
+    env_file:
+      - db-2.env
+    networks:
+      - dbs
+    entrypoint: 
+      - /bin/bash 
+      - entrypoint.sh
+    command: 
+      - patroni 
+      - /run/secrets/patroni_cfg
+    
+  dbnode3:
+    image: patroni-dev
+    volumes:
+      - db-3-data:/data
+    secrets: 
+      - patroni_cfg
+      - aws_access_key_id
+      - aws_region
+      - aws_secret_access_key
+      - wale_s3_prefix
+    env_file:
+      - db-3.env
+    networks:
+      - dbs
+    entrypoint: 
+      - /bin/bash 
+      - entrypoint.sh
+    command: 
+      - patroni 
+      - /run/secrets/patroni_cfg
+
+  crontab:
+    image: alpine:latest
+    secrets: 
+      - crontab
+      - base-backup
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /usr/bin/docker:/usr/bin/docker 
+    entrypoint: ash
+    command: /run/secrets/crontab
+
+volumes:
+  db-1-data:
+  db-2-data:
+  db-3-data:
+  etcd_data:
+
+networks:
+  dbs:
+  apps:
+
+secrets:
+  haproxy_cfg:
+    file: config/haproxy.cfg
+  patroni_cfg:
+    file: patroni.dev.yml
+  aws_access_key_id:
+    file: wal-e/AWS_ACCESS_KEY_ID
+  aws_region:
+    file: wal-e/AWS_REGION
+  aws_secret_access_key:
+    file: wal-e/AWS_SECRET_ACCESS_KEY
+  wale_s3_prefix:
+    file: wal-e/WALE_S3_PREFIX
+  crontab:
+    file: cron/crontab.sh
+  base-backup:
+    file: cron/base-backup
+  

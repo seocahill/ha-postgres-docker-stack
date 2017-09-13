@@ -1,0 +1,18 @@
+bootstrap:
+  dcs:
+    postgresql:
+      use_pg_rewind: true
+      # parameters:
+      #   archive_mode: "on"
+      #   archive_command: envdir "/etc/wal-e.d/env" wal-e wal-push "%p"
+      # recovery_conf:
+      #   restore_command: envdir "/etc/wal-e.d/env" wal-e wal-fetch "%f" "%p"
+      callbacks:
+        on_start: /home/postgres/notification.py
+        on_stop: /home/postgres/notification.py
+        on_restart: /home/postgres/notification.py
+        on_reload: /home/postgres/notification.py
+        on_role_change: /home/postgres/notification.py
+  pg_hba:
+    - host all all 0.0.0.0/0 md5
+    - host replication replicator 10.0.0.0/8 md5
