@@ -1,0 +1,14 @@
+{
+  "state": "running",
+  "database_system_identifier": "6473773867872940068",
+  "xlog": {
+    "location": 83888536
+  },
+  "patroni": {
+    "version": "1.2.5",
+    "scope": "pg-cluster"
+  },
+  "role": "master",
+  "postmaster_start_time": "2017-10-06 14:18:44.908 UTC",
+  "server_version": 90603
+}
