@@ -16,6 +16,10 @@ done
 if [ $TRIES -eq 15 ]; then
   printf '\nno response from server'
 else
+  printf '\nloading test data\n'
+  PGPASSWORD=postgres psql -h localhost -U postgres -p 5000 postgres -c "create database pagila;"
+  PGPASSWORD=postgres psql -h localhost -U postgres -p 5000 pagila < $PWD/test/data/pagila-schema.sql 
+  PGPASSWORD=postgres psql -h localhost -U postgres -p 5000 pagila < $PWD/test/data/pagila-data.sql 
   printf '\nrunning tests\n'
   docker run --rm -v `pwd`:`pwd` -w `pwd` --network=dbs -i -t ruby:alpine ruby test/stack_tests.rb 
   printf '\ndone!'

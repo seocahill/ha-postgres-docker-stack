@@ -18,8 +18,6 @@ services:
   
   etcdnode1:
     image: quay.io/coreos/etcd:v3.1.2
-    volumes:
-      - etcd_data:/etcd_data
     networks: 
       - dbs
     entrypoint: etcd
@@ -41,8 +39,6 @@ services:
 
   dbnode1:
     image: seocahill/patroni:1.2.5
-    volumes:
-        - db-1-data:/data
     secrets: 
       - patroni.yml
       - aws_access_key_id
@@ -60,8 +56,6 @@ services:
 
   dbnode2:
     image: seocahill/patroni:1.2.5
-    volumes:
-      - db-2-data:/data
     secrets: 
       - patroni.yml
       - aws_access_key_id
@@ -79,8 +73,6 @@ services:
     
   dbnode3:
     image: seocahill/patroni:1.2.5
-    volumes:
-      - db-3-data:/data
     secrets: 
       - patroni.yml
       - aws_access_key_id
@@ -121,12 +113,6 @@ services:
       - cron_restore_dump
     entrypoint: bash
     command: /run/secrets/crontab
-
-volumes:
-  db-1-data:
-  db-2-data:
-  db-3-data:
-  etcd_data:
 
 networks:
   dbs:
