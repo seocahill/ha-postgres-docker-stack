@@ -1,6 +1,6 @@
 #! /bin/sh
 
-# For the tes env create the dbs network externally and allow other containers to attach 
+# For testing create the dbs network externally and allow other containers to attach 
 docker network create -d overlay --attachable dbs
 docker stack deploy -c docker-stack-test.yml test_pg_cluster
 printf '\nwaiting for stack to boot'; 
@@ -21,11 +21,14 @@ else
   PGPASSWORD=postgres psql -h localhost -U postgres -p 5000 pagila < $PWD/test/data/pagila-schema.sql 
   PGPASSWORD=postgres psql -h localhost -U postgres -p 5000 pagila < $PWD/test/data/pagila-data.sql 
   printf '\nrunning tests\n'
-  docker run --rm -v `pwd`:`pwd` -w `pwd` --network=dbs -i -t seocahill/ruby-postgres-alpine ruby test/stack_tests.rb 
+  docker run --rm -v `pwd`:`pwd` -w `pwd` --network=dbs -i -t seocahill/ruby-postgres-alpine:0.1 ruby test/stack_tests.rb 
   printf '\ndone!'
 fi
 
-printf '\nstopping services\n'; 
-
-docker stack rm test_pg_cluster
-docker network rm dbs
+if [ "$1" != "-a" ]; then
+  printf '\nstack still up!\n'; 
+else
+  printf '\nstopping services\n'; 
+  docker stack rm test_pg_cluster
+  docker network rm dbs
+fi
