@@ -23,7 +23,7 @@
     }
   ],
   "xlog": {
-    "location": 79443936
+    "location": 80036368
   },
   "patroni": {
     "scope": "pg-cluster",

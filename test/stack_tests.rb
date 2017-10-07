@@ -12,15 +12,15 @@ class StackTests < MiniTest::Test
   end
 
   def test_replication
-    master_conn = PG::Connection.connect("haproxy", 5000, '', '', "pagila", "postgres", "postgres")
-    repl_conn = PG::Connection.connect("haproxy", 5001, '', '', "pagila", "postgres", "postgres")
-    master_film_count = master_conn.exec("select count(*) from film;").getvalue(0,0)
-    replica_film_count = repl_conn.exec("select count(*) from film;").getvalue(0,0)
+    # check dbs are in sync
+    assert_equal "1000", query("master", "SELECT COUNT(*) FROM film;"), "Master has correct films"
+    assert_equal "1000", query("replica", "SELECT COUNT(*) FROM film;"), "Replica has correct films"
 
-    assert_equal "1000", master_film_count, "Master has correct films"
-    assert_equal "1000", replica_film_count, "Replica has correct films"
-
-    # write on master and check replica
+    # update master db
+    query("master", "UPDATE actor SET first_name = 'Seosamh' WHERE actor_id = 1;")
+    # check if replcation has occurred
+    sleep 2
+    assert_equal "Seosamh",  query("replica", "SELECT first_name FROM actor WHERE actor_id = 1;"), "Replica has updated"
   end
 
   def test_planned_failover
