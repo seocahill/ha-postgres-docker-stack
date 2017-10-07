@@ -1,4 +1,3 @@
-require 'pg'
 require_relative 'test_helper'
 
 class StackTests < MiniTest::Test
@@ -24,20 +23,38 @@ class StackTests < MiniTest::Test
   end
 
   def test_planned_failover
-    skip
-    # post /failover
-    # check current master 
-    # get('http://haproxy:8008/failover')
-    # check new master
-    # SELECT pg_is_in_recovery()
-    # select client_addr, state, sent_location, write_location, flush_location, replay_location from pg_stat_replication;
-    # check new chidlren.
+    # returns domain names of each db node i.e. one of dbnode1, dbnode2 or dbnode3 which also match patroni member names
+    master = lookup_master
+    candidate = lookup_replicas.first
+    
+    # Initiate failover 
+    response = post_request('http://haproxy:8008/failover', { "leader": master, "candidate": candidate })
+    assert_equal response.code, '200', "Failover initiated"
+
+    # Failover might take a few seconds to complete
+    # need new db connection I think
+    new_master = lookup_master
+    until new_master
+      puts "waiting for failover to conclude"
+      sleep 5
+      new_master = lookup_master
+    end
+    
+    # check old master is demoted and replica promoted
+    assert_equal candidate, new_master, "Replica has been promoted to master"
+    refute_includes replicas, candidate, "Replicas do not contain candidate"
+
+    # check for split brain
+    assert_false node_in_recovery?(candidate), "New master not in recovery"
+    assert_true node_in_recovery?(master), "Old master in recovery"
+
+    # check sync
+    master_log = query("master", "SELECT pg_current_xlog_location();")
+    replica_log = query("replica", "SELECT pg_last_xlog_receive_location();")
+    assert_equal master_log, repolica_log, "Cluster in sync"
   end
 
   def test_unplanned_failover
-    skip
-    # get api /services/id of master node
-    # docker api /services/id DEL
-    # check new master and replica up.
+    skip "use docker api to delete master node service and test failover"
   end
 end
