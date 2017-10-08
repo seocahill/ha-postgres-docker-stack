@@ -1,32 +1,32 @@
 {
-  "postmaster_start_time": "2017-10-07 10:15:27.914 UTC",
   "state": "running",
-  "database_system_identifier": "6474110550775406629",
+  "xlog": {
+    "location": 79737760
+  },
   "role": "master",
-  "server_version": 90603,
   "replication": [
     {
+      "state": "streaming",
       "application_name": "dbnode1",
       "sync_state": "async",
-      "state": "streaming",
       "usename": "replicator",
       "client_addr": "10.0.0.3",
       "sync_priority": 0
     },
     {
+      "state": "streaming",
       "application_name": "dbnode2",
       "sync_state": "async",
-      "state": "streaming",
       "usename": "replicator",
       "client_addr": "10.0.0.5",
       "sync_priority": 0
     }
   ],
-  "xlog": {
-    "location": 80036368
-  },
+  "postmaster_start_time": "2017-10-08 13:32:32.104 UTC",
+  "database_system_identifier": "6474532376541671459",
+  "server_version": 90603,
   "patroni": {
-    "scope": "pg-cluster",
-    "version": "1.2.5"
+    "version": "1.2.5",
+    "scope": "pg-cluster"
   }
 }

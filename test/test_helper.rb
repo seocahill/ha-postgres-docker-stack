@@ -11,57 +11,85 @@ module TestHelper
 
   # Query postgres
 
-  # each test within a test file, is run on a new instance of the test class so need class variables for shared behaviour
-  #  pg args: host port options tty dbname user password
-  @@master_conn ||= PG::Connection.open("haproxy", 5000, '', '', "pagila", "postgres", "postgres")
-  @@repl_conn ||= PG::Connection.open("haproxy", 5001, '', '', "pagila", "postgres", "postgres")
+  def query(host_name, query)
+    begin
+      con_args = connection_args(host_name)
+      con = PG::Connection.open(*con_args)
+      con.exec(query)
+    rescue PG::Error => e
+      puts e.message 
+    ensure
+      con.close if con
+    end
+  end
 
-  def query(connection, query)
-    db = (connection == "master") ? @@master_conn : @@repl_conn
-    db.exec(query)&.getvalue(0,0) rescue nil
+  def connection_args(host_name)
+    host, port = case host_name
+      when "master" then ["haproxy", 5000]
+      when "replica" then ["haproxy", 5001]
+      else [host_name, 5432]
+    end
+    #  pg args: host port options tty dbname user password
+    [host, port, '', '', "pagila", "postgres", "postgres"]
   end
 
   # Stack state
-
   def lookup_master
-    query("master", "SHOW data_directory;")&.split('/')&.last
+    result = query("master", "SHOW data_directory;")
+    result.getvalue(0,0)&.split('/')&.last
   end
 
   def lookup_replicas
-    config = get_request("http://haproxy:8008/replica")
-    config["replication"]&.map { |db| db["application_name"] }
+    response = get_request("http://haproxy:8008/replica")
+    if response.body
+      JSON.parse(response.body)["replication"]&.map { |db| db["application_name"] }
+    else
+      []
+    end
   end
 
-  def node_in_recovery?(node)
-    conn = PG::Connection.open(node, 5432, '', '', "pagila", "postgres", "postgres")
-    conn.exec("SELECT pg_is_in_recovery();").getvalue(0,0) == "t"
+  def node_in_recovery?(host_name)
+    query(host_name, "SELECT pg_is_in_recovery();").getvalue(0,0) == "t"
   end
 
   # HTTP
+  PatroniAPIError = Struct.new(:code, :error)
 
-  def get_request(url = "http://haproxy:8008")
+  def get_request(url)
     uri = URI(url)
     filename = File.basename(uri.path)
+    http = Net::HTTP.new(uri.host, uri.port)
+    request = Net::HTTP::Get.new(uri.request_uri)
     begin
-      response = Net::HTTP.get(uri)
-      payload = JSON.parse(response)
+      response = http.request(request)
+      payload = JSON.parse(response.body)
       File.open(File.join(__dir__, "logs", "#{filename}.json"), 'w') do |f|
         f.write(JSON.pretty_generate(payload))
       end
-      payload
+      response
     rescue Exception => e
       @@log.error(e)
-      {}
+      PatroniAPIError.new(code: "500", error: e)
     end
   end
 
   def post_request(url, params)
     uri = URI(url)
+    filename = File.basename(uri.path)
     http = Net::HTTP.new(uri.host, uri.port)
     request = Net::HTTP::Post.new(uri.request_uri)
     request["Content-Type"] = "application/json"
     request.body = params.to_json
     request.basic_auth("admin", "admin")
-    response = http.request(request)
+    begin
+      response = http.request(request)
+      File.open(File.join(__dir__, "logs", "#{filename}.json"), 'w') do |f|
+        f.write({ message: response.body }.to_json)
+      end
+      response
+    rescue Exception => e
+      @@log.error(e)
+      PatroniAPIError.new(code: "500", error: e)
+    end
   end
 end
