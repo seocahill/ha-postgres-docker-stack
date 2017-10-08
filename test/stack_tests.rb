@@ -34,11 +34,11 @@ class StackTests < MiniTest::Test
     # Failover might take a few seconds to complete
     # need new db connection I think
     new_master = lookup_master
-    until new_master
-      puts "waiting for failover to conclude"
-      sleep 5
-      new_master = lookup_master
-    end
+    # until new_master
+    #   puts "waiting for failover to conclude"
+    #   sleep 3
+    #   new_master = lookup_master
+    # end
     
     # check old master is demoted and replica promoted
     assert_equal candidate, new_master, "Replica has been promoted to master"
