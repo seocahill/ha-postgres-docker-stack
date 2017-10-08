@@ -1,32 +1,32 @@
 {
-  "state": "running",
-  "xlog": {
-    "location": 79737760
-  },
-  "role": "master",
-  "replication": [
-    {
-      "state": "streaming",
-      "application_name": "dbnode1",
-      "sync_state": "async",
-      "usename": "replicator",
-      "client_addr": "10.0.0.3",
-      "sync_priority": 0
-    },
-    {
-      "state": "streaming",
-      "application_name": "dbnode2",
-      "sync_state": "async",
-      "usename": "replicator",
-      "client_addr": "10.0.0.5",
-      "sync_priority": 0
-    }
-  ],
-  "postmaster_start_time": "2017-10-08 13:32:32.104 UTC",
-  "database_system_identifier": "6474532376541671459",
   "server_version": 90603,
+  "role": "master",
+  "state": "running",
+  "database_system_identifier": "6474572627185049636",
+  "postmaster_start_time": "2017-10-08 16:08:46.098 UTC",
   "patroni": {
     "version": "1.2.5",
     "scope": "pg-cluster"
+  },
+  "replication": [
+    {
+      "usename": "replicator",
+      "application_name": "dbnode1",
+      "client_addr": "10.0.0.5",
+      "state": "streaming",
+      "sync_state": "async",
+      "sync_priority": 0
+    },
+    {
+      "usename": "replicator",
+      "application_name": "dbnode3",
+      "client_addr": "10.0.0.9",
+      "state": "streaming",
+      "sync_state": "async",
+      "sync_priority": 0
+    }
+  ],
+  "xlog": {
+    "location": 79714824
   }
 }

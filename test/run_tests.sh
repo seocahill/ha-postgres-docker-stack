@@ -25,10 +25,11 @@ else
   printf '\ndone!'
 fi
 
-if [ "$0" != "-a" ]; then
+if [ "$1" == "-a" ]; then
   printf '\nstack still up!\n'; 
 else
-  printf '\nstopping services\n'; 
+  printf '\nstopping services\n';
+  sleep 5;
   docker stack rm test_pg_cluster
   docker network rm dbs
 fi
