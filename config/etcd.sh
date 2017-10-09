@@ -8,6 +8,6 @@ etcd -name etcdnode1 \
     -listen-peer-urls http://0.0.0.0:2380 \
     -initial-cluster etcdnode1=http://etcdnode1:2380
 
-sleep 10
+# sleep 10
 
-etcdctl exec-watch --recursive /service/pg-cluster/leader -- sh -c 'echo "\"$ETCD_WATCH_KEY\" key was updated to \"$ETCD_WATCH_VALUE\" value by \"$ETCD_WATCH_ACTION\" action"'
+# etcdctl exec-watch --recursive /service/pg-cluster/leader -- sh -c 'echo "\"$ETCD_WATCH_KEY\" key was updated to \"$ETCD_WATCH_VALUE\" value by \"$ETCD_WATCH_ACTION\" action"'

@@ -1,4 +1,4 @@
-version: '3.1'
+version: '3.3'
 services:
 
   haproxy:
@@ -7,46 +7,24 @@ services:
         - "5000:5000"
         - "5001:5001"
         - "8008:8008"
-    secrets: 
+    configs: 
       - haproxy_cfg
     networks:
       - dbs
-    command:
-      - haproxy
-      - -f 
-      - /run/secrets/haproxy_cfg
+    command: haproxy -f /haproxy_cfg
   
   etcdnode1:
     image: quay.io/coreos/etcd:v3.1.2
+    configs:
+      - etcd_cfg
     networks: 
       - dbs
-    entrypoint: etcd
-    command:
-      - -name
-      - etcdnode1
-      - --data-dir
-      - /etcd_data
-      - -advertise-client-urls
-      - http://etcdnode1:2379
-      - -listen-client-urls
-      - http://0.0.0.0:2379
-      - -initial-advertise-peer-urls
-      - http://etcdnode1:2380
-      - -listen-peer-urls
-      - http://0.0.0.0:2380
-      - -initial-cluster
-      - etcdnode1=http://etcdnode1:2380
+    command: /bin/sh /etcd_cfg
 
   dbnode1:
     image: seocahill/patroni:1.2.5
     secrets: 
       - patroni.yml
-      - aws_access_key_id
-      - aws_region
-      - aws_secret_access_key
-      - wale_s3_prefix
-      - notification.py
-      - notification.sh
     env_file:
       - db-1.env
     networks:
@@ -58,12 +36,6 @@ services:
     image: seocahill/patroni:1.2.5
     secrets: 
       - patroni.yml
-      - aws_access_key_id
-      - aws_region
-      - aws_secret_access_key
-      - wale_s3_prefix
-      - notification.py
-      - notification.sh
     env_file:
       - db-2.env
     networks:
@@ -75,75 +47,23 @@ services:
     image: seocahill/patroni:1.2.5
     secrets: 
       - patroni.yml
-      - aws_access_key_id
-      - aws_region
-      - aws_secret_access_key
-      - wale_s3_prefix
-      - notification.py
-      - notification.sh
     env_file:
       - db-3.env
     networks:
       - dbs
     entrypoint: /bin/bash entrypoint.sh
     command: patroni /run/secrets/patroni.yml
-    
-  cron:
-    image: seocahill/patroni:latest
-    user: root
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /usr/bin/docker:/usr/bin/docker 
-    networks:
-      - dbs
-    env_file:
-      - cron.env
-    deploy:
-      mode: global
-    secrets: 
-      - crontab
-      - aws_access_key_id
-      - aws_region
-      - aws_secret_access_key
-      - wale_s3_prefix
-      - aws_default_region
-      - cron_archive
-      - cron_restore_archive
-      - cron_dump
-      - cron_restore_dump
-    entrypoint: bash
-    command: /run/secrets/crontab
 
 networks:
   dbs:
     external: true
 
-secrets:
+configs:
   haproxy_cfg:
     file: config/haproxy.cfg
+  etcd_cfg:
+    file: config/etcd.sh
+
+secrets:
   patroni.yml:
     file: patroni.yml
-  aws_access_key_id:
-    file: wal-e/AWS_ACCESS_KEY_ID
-  aws_region:
-    file: wal-e/AWS_REGION
-  aws_default_region:
-    file: wal-e/AWS_DEFAULT_REGION
-  aws_secret_access_key:
-    file: wal-e/AWS_SECRET_ACCESS_KEY
-  wale_s3_prefix:
-    file: wal-e/WALE_S3_PREFIX_S
-  crontab:
-    file: cron/crontab.sh
-  cron_archive:
-    file: cron/archive
-  cron_restore_archive:
-    file: cron/restore_archive
-  cron_dump:
-    file: cron/dump
-  cron_restore_dump:
-    file: cron/restore_dump
-  notification.py:
-    file: callbacks/test.py
-  notification.sh:
-    file: callbacks/test.sh
