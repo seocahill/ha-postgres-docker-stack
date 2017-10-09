@@ -118,40 +118,44 @@ services:
     entrypoint: patroni
     command: /run/secrets/patroni.yml
     
-  cron:
-    image: seocahill/patroni:1.2.5
-    user: root
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /usr/bin/docker:/usr/bin/docker 
-    networks:
-      - dbs
-    env_file:
-      - cron.env
-    deploy:
-      mode: global
-    secrets: 
-      - source: aws_access_key_id
-        target: /etc/wal-e.d/env/AWS_ACCESS_KEY_ID
-      - source: aws_region
-        target: /etc/wal-e.d/env/AWS_REGION
-      - source: aws_secret_access_key
-        target: /etc/wal-e.d/env/AWS_SECRET_ACCESS_KEY
-      - source: wale_s3_prefix
-        target: /etc/wal-e.d/env/WALE_S3_PREFIX
-      - source: aws_default_region
-        target: /etc/wal-e.d/env/AWS_DEFAULT_REGION
-    configs:
-      - source: cron_archive
-        target: /etc/cron.daily/archive
-      - source: cron_restore_archive
-        target: /etc/cron.weekly/restore_archive
-      - source: cron_dump
-        target: /etc/cron.daily/dump
-      - source: cron_restore_dump
-        target: /etc/cron.weekly/restore_dump
-    entrypoint: bash
-    command: /usr/sbin/cron -f
+  # cron:
+  #   image: seocahill/patroni:1.2.5
+  #   user: root
+  #   volumes:
+  #     - /var/run/docker.sock:/var/run/docker.sock:ro
+  #     - /usr/bin/docker:/usr/bin/docker 
+  #   networks:
+  #     - dbs
+  #   env_file:
+  #     - cron.env
+  #   deploy:
+  #     mode: global
+  #   secrets: 
+  #     - source: aws_access_key_id
+  #       target: /etc/wal-e.d/env/AWS_ACCESS_KEY_ID
+  #     - source: aws_region
+  #       target: /etc/wal-e.d/env/AWS_REGION
+  #     - source: aws_secret_access_key
+  #       target: /etc/wal-e.d/env/AWS_SECRET_ACCESS_KEY
+  #     - source: wale_s3_prefix
+  #       target: /etc/wal-e.d/env/WALE_S3_PREFIX
+  #     - source: aws_default_region
+  #       target: /etc/wal-e.d/env/AWS_DEFAULT_REGION
+  #   configs:
+  #     - source: cron_archive
+  #       target: /etc/cron.daily/archive
+  #       mode: 0777
+  #     - source: cron_restore_archive
+  #       target: /etc/cron.weekly/restore_archive
+  #       mode: 0777
+  #     - source: cron_dump
+  #       target: /etc/cron.daily/dump
+  #       mode: 0777
+  #     - source: cron_restore_dump
+  #       target: /etc/cron.weekly/restore_dump
+  #       mode: 0777
+  #   entrypoint: bash
+  #   command: cron -f
 
 volumes:
   db-1-data:
@@ -161,6 +165,9 @@ volumes:
 
 networks:
   dbs:
+    # ipam:
+    #   config:
+    #     - subnet: 10.0.0.0/24
   app:
 
 configs:

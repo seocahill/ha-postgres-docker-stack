@@ -1,0 +1,12 @@
+{
+  "postgresql": {
+    "use_pg_rewind": true,
+    "parameters": {
+      "archive_mode": "on",
+      "archive_command": "envdir \"/etc/wal-e.d/env\" wal-e wal-push \"%p\""
+    },
+    "recovery_conf": {
+      "restore_command": "envdir \"/etc/wal-e.d/env\" wal-e wal-fetch \"%f\" \"%p\""
+    }
+  }
+}

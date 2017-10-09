@@ -6,7 +6,7 @@ curl -u admin:admin  \
   -s -XPATCH \
   -H 'Content-Type:application/json' \
   -H 'Accept: application/json' \
-  -d @wal-e/wal-e.json \
+  -d @config/wal-e.json \
   http://$HOST_IP:8008/config | jq .
 
 # checking status should see pending restart
