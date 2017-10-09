@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # find the master db
-master=`curl -L http://etcdnode1:2379/v2/keys/service/pg-cluster/leader | jq .node.value`
+master=`curl -L http://etcd:2379/v2/keys/service/pg-cluster/leader | jq .node.value`
 
 # run the backup if master
 envdir /etc/wal-e.d/env wal-e backup-push /data/dbnode

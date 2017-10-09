@@ -12,3 +12,45 @@ Briefly:
 
 - Docker compose yml for testing and production deployments of the full stack on infrastructure of choice.
 
+### Test / Development
+
+#### Prerequisites
+
+Docker, wget.
+
+Initiate swarm mode:
+```
+docker swarm init
+```
+
+#### Test
+
+run ```bash scripts/run_tests.sh```
+
+#### Development
+
+run ```tsu``` 
+
+
+### Staging
+
+Staging setup has been tested with docker-machine on AWS and Digital Ocean
+
+Create a cluster with AWS or digital ocean
+
+```
+cvms 
+```
+
+Login to node and make swarm manager
+Join other nodes as worker
+AWS only
+```
+sudo usermod -a -G docker $USER
+```
+create labels
+docker stack deploy -c docker-stack.yml --with-registry-auth pg_cluster
+test.
+
+Destroy.
+

@@ -142,17 +142,16 @@ services:
       - source: aws_default_region
         target: /etc/wal-e.d/env/AWS_DEFAULT_REGION
     configs:
-      - crontab
       - source: cron_archive
-        target: /etc/cron.daily
+        target: /etc/cron.daily/archive
       - source: cron_restore_archive
-        target: /etc/cron.weekly
+        target: /etc/cron.weekly/restore_archive
       - source: cron_dump
-        target: /etc/cron.daily
+        target: /etc/cron.daily/dump
       - source: cron_restore_dump
-        target: /etc/cron.weekly
+        target: /etc/cron.weekly/restore_dump
     entrypoint: bash
-    command: cron -f
+    command: /usr/sbin/cron -f
 
 volumes:
   db-1-data:
@@ -167,8 +166,8 @@ networks:
 configs:
   haproxy_cfg:
     file: config/haproxy.cfg
-  patroni.yml:
-    file: patroni.yml
+  etcd_cfg:
+    file: config/etcd.sh
   cron_archive:
     file: cron/archive.sh
   cron_restore_archive:
@@ -183,6 +182,8 @@ configs:
     file: callbacks/notification.sh
 
 secrets:
+  patroni.yml:
+    file: patroni.yml
   aws_access_key_id:
     file: wal-e/AWS_ACCESS_KEY_ID
   aws_region:
