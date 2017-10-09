@@ -4,13 +4,13 @@ require 'net/http'
 require 'json'
 require 'logger'
 require 'pg'
+require 'timeout'
 
 module TestHelper
   logfile = File.new(File.join(__dir__, "logs", "test.log"), 'w')
   @@log = Logger.new(logfile)
 
   # Query postgres
-
   def query(host_name, query)
     begin
       con_args = connection_args(host_name)
@@ -34,6 +34,22 @@ module TestHelper
   end
 
   # Stack state
+  
+  def wait_for_replicas(seconds = 16)
+    print "\nwaiting on replicas"
+    begin
+      Timeout::timeout(seconds) {
+        until JSON.parse(get_request("http://haproxy:8008/master").body).has_key?("replication")
+          print "."
+          sleep 3
+        end
+      }
+    rescue TimeoutError
+      puts "Timeout waiting for replication to synchonrize"
+    end
+    puts "\nok"
+  end
+
   def lookup_master
     result = query("master", "SHOW data_directory;")
     result.getvalue(0,0)&.split('/')&.last
