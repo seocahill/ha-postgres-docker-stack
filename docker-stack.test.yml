@@ -13,7 +13,7 @@ services:
       - dbs
     command: haproxy -f /haproxy_cfg
   
-  etcdnode1:
+  etcd:
     image: quay.io/coreos/etcd:v3.1.2
     configs:
       - etcd_cfg

@@ -1,28 +1,23 @@
-version: '3.1'
+version: '3.3'
 services:
 
   haproxy:
     image: haproxy:alpine
-    ports:
-        - "5000:5000"
-        - "5001:5001"
-        - "8008:8008"
-    secrets: 
+    configs: 
       - haproxy_cfg
     networks:
-      - apps
+      - app
       - dbs
     deploy:
       placement:
         constraints:
           - node.labels.type == db
-    command:
-      - haproxy
-      - -f 
-      - /run/secrets/haproxy_cfg
+    command: haproxy -f /haproxy_cfg
   
-  etcdnode1:
+  etcd:
     image: quay.io/coreos/etcd:v3.1.2
+    configs:
+      - etcd_cfg
     volumes:
       - etcd_data:/etcd_data
     networks: 
@@ -31,22 +26,7 @@ services:
       placement:
         constraints:
           - node.labels.type == db
-    entrypoint: etcd
-    command:
-      - -name
-      - etcdnode1
-      - --data-dir
-      - /etcd_data
-      - -advertise-client-urls
-      - http://etcdnode1:2379
-      - -listen-client-urls
-      - http://0.0.0.0:2379
-      - -initial-advertise-peer-urls
-      - http://etcdnode1:2380
-      - -listen-peer-urls
-      - http://0.0.0.0:2380
-      - -initial-cluster
-      - etcdnode1=http://etcdnode1:2380
+    command: /bin/sh /etcd_cfg
 
   dbnode1:
     image: seocahill/patroni:1.2.5
@@ -54,12 +34,19 @@ services:
         - db-1-data:/data
     secrets: 
       - patroni.yml
-      - aws_access_key_id
-      - aws_region
-      - aws_secret_access_key
-      - wale_s3_prefix
-      - notification.py
-      - notification.sh
+      - source: aws_access_key_id
+        target: /etc/wal-e.d/env/AWS_ACCESS_KEY_ID
+      - source: aws_region
+        target: /etc/wal-e.d/env/AWS_REGION
+      - source: aws_secret_access_key
+        target: /etc/wal-e.d/env/AWS_SECRET_ACCESS_KEY
+      - source: wale_s3_prefix
+        target: /etc/wal-e.d/env/WALE_S3_PREFIX
+    configs:
+      - source: notification.py
+        target: /home/postgres/notification.py
+      - source: notification.sh
+        target: /home/postgres/notification.sh
     env_file:
       - db-1.env
     networks:
@@ -68,8 +55,8 @@ services:
       placement:
         constraints:
           - node.labels.name == db-1
-    entrypoint: /bin/bash entrypoint.sh
-    command: patroni /run/secrets/patroni.yml
+    entrypoint: patroni
+    command: /run/secrets/patroni.yml
 
   dbnode2:
     image: seocahill/patroni:1.2.5
@@ -77,12 +64,19 @@ services:
       - db-2-data:/data
     secrets: 
       - patroni.yml
-      - aws_access_key_id
-      - aws_region
-      - aws_secret_access_key
-      - wale_s3_prefix
-      - notification.py
-      - notification.sh
+      - source: aws_access_key_id
+        target: /etc/wal-e.d/env/AWS_ACCESS_KEY_ID
+      - source: aws_region
+        target: /etc/wal-e.d/env/AWS_REGION
+      - source: aws_secret_access_key
+        target: /etc/wal-e.d/env/AWS_SECRET_ACCESS_KEY
+      - source: wale_s3_prefix
+        target: /etc/wal-e.d/env/WALE_S3_PREFIX
+    configs:
+      - source: notification.py
+        target: /home/postgres/notification.py
+      - source: notification.sh
+        target: /home/postgres/notification.sh
     env_file:
       - db-2.env
     networks:
@@ -91,8 +85,8 @@ services:
       placement:
         constraints:
           - node.labels.name == db-2
-    entrypoint: /bin/bash entrypoint.sh
-    command: patroni /run/secrets/patroni.yml
+    entrypoint: patroni
+    command: /run/secrets/patroni.yml
     
   dbnode3:
     image: seocahill/patroni:1.2.5
@@ -100,12 +94,19 @@ services:
       - db-3-data:/data
     secrets: 
       - patroni.yml
-      - aws_access_key_id
-      - aws_region
-      - aws_secret_access_key
-      - wale_s3_prefix
-      - notification.py
-      - notification.sh
+      - source: aws_access_key_id
+        target: /etc/wal-e.d/env/AWS_ACCESS_KEY_ID
+      - source: aws_region
+        target: /etc/wal-e.d/env/AWS_REGION
+      - source: aws_secret_access_key
+        target: /etc/wal-e.d/env/AWS_SECRET_ACCESS_KEY
+      - source: wale_s3_prefix
+        target: /etc/wal-e.d/env/WALE_S3_PREFIX
+    configs:
+      - source: notification.py
+        target: /home/postgres/notification.py
+      - source: notification.sh
+        target: /home/postgres/notification.sh
     env_file:
       - db-3.env
     networks:
@@ -114,11 +115,11 @@ services:
       placement:
         constraints:
           - node.labels.name == db-3
-    entrypoint: /bin/bash entrypoint.sh
-    command: patroni /run/secrets/patroni.yml
+    entrypoint: patroni
+    command: /run/secrets/patroni.yml
     
   cron:
-    image: seocahill/patroni:latest
+    image: seocahill/patroni:1.2.5
     user: root
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
@@ -130,18 +131,28 @@ services:
     deploy:
       mode: global
     secrets: 
+      - source: aws_access_key_id
+        target: /etc/wal-e.d/env/AWS_ACCESS_KEY_ID
+      - source: aws_region
+        target: /etc/wal-e.d/env/AWS_REGION
+      - source: aws_secret_access_key
+        target: /etc/wal-e.d/env/AWS_SECRET_ACCESS_KEY
+      - source: wale_s3_prefix
+        target: /etc/wal-e.d/env/WALE_S3_PREFIX
+      - source: aws_default_region
+        target: /etc/wal-e.d/env/AWS_DEFAULT_REGION
+    configs:
       - crontab
-      - aws_access_key_id
-      - aws_region
-      - aws_secret_access_key
-      - wale_s3_prefix
-      - aws_default_region
-      - cron_archive
-      - cron_restore_archive
-      - cron_dump
-      - cron_restore_dump
+      - source: cron_archive
+        target: /etc/cron.daily
+      - source: cron_restore_archive
+        target: /etc/cron.weekly
+      - source: cron_dump
+        target: /etc/cron.daily
+      - source: cron_restore_dump
+        target: /etc/cron.weekly
     entrypoint: bash
-    command: /run/secrets/crontab
+    command: cron -f
 
 volumes:
   db-1-data:
@@ -151,13 +162,27 @@ volumes:
 
 networks:
   dbs:
-  apps:
+  app:
 
-secrets:
+configs:
   haproxy_cfg:
     file: config/haproxy.cfg
   patroni.yml:
     file: patroni.yml
+  cron_archive:
+    file: cron/archive.sh
+  cron_restore_archive:
+    file: cron/restore_archive.sh
+  cron_dump:
+    file: cron/dump.sh
+  cron_restore_dump:
+    file: cron/restore_dump.sh
+  notification.py:
+    file: callbacks/notification.py
+  notification.sh:
+    file: callbacks/notification.sh
+
+secrets:
   aws_access_key_id:
     file: wal-e/AWS_ACCESS_KEY_ID
   aws_region:
@@ -168,17 +193,3 @@ secrets:
     file: wal-e/AWS_SECRET_ACCESS_KEY
   wale_s3_prefix:
     file: wal-e/WALE_S3_PREFIX_S
-  crontab:
-    file: cron/crontab.sh
-  cron_archive:
-    file: cron/archive
-  cron_restore_archive:
-    file: cron/restore_archive
-  cron_dump:
-    file: cron/dump
-  cron_restore_dump:
-    file: cron/restore_dump
-  notification.py:
-    file: callbacks/test.py
-  notification.sh:
-    file: callbacks/test.sh
