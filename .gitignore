@@ -8,7 +8,7 @@ capybara-*.html
 /.bundle
 /.vagrant
 /vendor/bundle
-test/logs/*
+/test/logs
 /tmp/*
 /backups/*
 /tmp/.keep
