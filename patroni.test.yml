@@ -1,0 +1,7 @@
+bootstrap:
+  dcs:
+    postgresql:
+      use_pg_rewind: true
+  pg_hba:
+    - host all all 0.0.0.0/0 md5
+    - host replication replicator 10.0.0.0/8 md5

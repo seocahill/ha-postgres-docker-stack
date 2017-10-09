@@ -2,7 +2,7 @@
 
 # For testing create the dbs network externally and allow other containers to attach 
 docker network create -d overlay --attachable dbs
-docker stack deploy -c docker-stack-test.yml test_pg_cluster
+docker stack deploy -c docker-stack.test.yml test_pg_cluster
 printf '\nwaiting for stack to boot'; 
 
 TRIES=0

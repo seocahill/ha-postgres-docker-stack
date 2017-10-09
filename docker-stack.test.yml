@@ -29,8 +29,8 @@ services:
       - db-1.env
     networks:
       - dbs
-    entrypoint: /bin/bash entrypoint.sh
-    command: patroni /run/secrets/patroni.yml
+    entrypoint: patroni
+    command: /run/secrets/patroni.yml
 
   dbnode2:
     image: seocahill/patroni:1.2.5
@@ -40,8 +40,8 @@ services:
       - db-2.env
     networks:
       - dbs
-    entrypoint: /bin/bash entrypoint.sh
-    command: patroni /run/secrets/patroni.yml
+    entrypoint: patroni
+    command: /run/secrets/patroni.yml
     
   dbnode3:
     image: seocahill/patroni:1.2.5
@@ -51,8 +51,8 @@ services:
       - db-3.env
     networks:
       - dbs
-    entrypoint: /bin/bash entrypoint.sh
-    command: patroni /run/secrets/patroni.yml
+    entrypoint: patroni
+    command: /run/secrets/patroni.yml
 
 networks:
   dbs:
@@ -66,4 +66,4 @@ configs:
 
 secrets:
   patroni.yml:
-    file: patroni.yml
+    file: patroni.test.yml
