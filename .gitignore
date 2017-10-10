@@ -23,7 +23,6 @@ pickle-email-*.html
 ~*
 .DS_Store
 .powenv
-*.sql
 public
 config/my-certs
 .aliases
