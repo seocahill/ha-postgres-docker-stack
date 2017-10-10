@@ -155,7 +155,7 @@ Make sure are executing these commands in the context of your node manager:
 eval $(docker-machine env db-1)
 ```
 
-To delloy your stack run
+To deploy your stack run
 
 ```
 docker stack deploy -c docker-stack.yml pg_cluster
