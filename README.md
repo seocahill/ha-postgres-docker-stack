@@ -1,16 +1,26 @@
 # HA Postgresql cluster on docker
 
-Todo: Detailed description of what's going on here!
+This is a docker compose file and some helper scripts to demonstrate how to deploy a highly available postgres cluster with automatic failover using docker swarm.
 
-Briefly: 
+The complete stack is:
 
-- High availablity: use patroni python library to orchestrate replication and automatic failover of master node.
+- docker swarm mode (orchestration)
+- haproxy (endpoint for db write/reads)
+- etcd (configuration, leader election)
+- patroni (governs db repliation and high availability)
+- postgres
 
-- PIT disaster recovery: Make physical backups with Wal-e and ship to remote storage.
+Not implemented by default but present:
+- wal-e log shipping to s3 
+- cron:
+  - logical backup and test logical backups
+  - physical backup and test physical backups
+- sample callback scripts for patroni events e.g. email admin on failover.
 
-- Cron tasks to monitor backup and test backup restore.
+Documentation:
 
-- Docker compose yml for testing and production deployments of the full stack on infrastructure of choice.
+- [patroni](https://patroni.readthedocs.io/en/latest/index.html)
+- [docker swarm mode](https://docs.docker.com/engine/swarm/)
 
 ### Test / Development
 
@@ -59,7 +69,6 @@ psql -p 5000
 ```
 
 
-
 ### Staging
 
 The staging setup has been tested with docker-machine on AWS and Digital Ocean. You will find a sample deploy script included in the scripts folder for aws deployment.
@@ -100,3 +109,14 @@ docker-machine create
   ```
 
 The rest of the stack setup is identical to the docker commands run in the aws deploy script.
+
+
+#### Virtualbox
+
+Make sure you have allocated enough RAM to run three nodes locally and then run
+
+```
+docker-machine create --driver virtualbox node-name
+```
+
+for each node.
