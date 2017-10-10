@@ -1,18 +1,30 @@
 # HA Postgresql cluster on docker
 
-Todo: Detailed description of what's going on here!
+This is a docker compose file and some helper scripts to demonstrate how to deploy a highly available postgres cluster with automatic failover using docker swarm.
 
-Briefly: 
+The complete stack is:
 
-- High availablity: use patroni python library to orchestrate replication and automatic failover of master node.
+- docker swarm mode (orchestration)
+- haproxy (endpoint for db write/reads)
+- etcd (configuration, leader election)
+- patroni (governs db repliation and high availability)
+- postgres
 
-- PIT disaster recovery: Make physical backups with Wal-e and ship to remote storage.
+Not implemented by default but present:
+- wal-e log shipping to s3 
+- cron:
+  - logical backup and test logical backups
+  - physical backup and test physical backups
+- sample callback scripts for patroni events e.g. email admin on failover.
 
-- Cron tasks to monitor backup and test backup restore.
+Documentation:
 
-- Docker compose yml for testing and production deployments of the full stack on infrastructure of choice.
+- [patroni](https://patroni.readthedocs.io/en/latest/index.html)
+- [docker swarm mode](https://docs.docker.com/engine/swarm/)
 
-### Test / Development
+### Test / Development 
+
+Use the ```docker-stack.test.yml``` when running the suite or testing the stack on docker for mac for example.
 
 #### Prerequisites
 
@@ -32,6 +44,15 @@ docker swarm init
 
 A basic test suite is included that covers cluster initiation, replication and failover.
 
+First copy the test env template to test.env
+```
+cp test.env.tmpl test.env
+```
+
+Patroni will not boot without these environment variables present.
+
+Run the test suite with
+
 ```
 bash scripts/run_tests.sh [-a to keep the stack up]
 ```
@@ -40,9 +61,16 @@ The test setup also includes the pagila test dataset. See the steps in the test 
 
 ###  Development
 
-Assuming you have loaded the aliases into your shell environment you can bring the test stack by running  ```tsu```.
+Assuming you have loaded the aliases into your shell environment you can bring the test stack by running 
+
+```
+tsu
+```
+
+If you want to use ```docker-stack.yml``` instead you'll need to remove the deploy restriction conditions or else the services will never start.
 
 You can use patroni's cli to check the cluster's status 
+
 ```
 pcli list pg-test-cluster
 ```
@@ -54,15 +82,22 @@ curl localhost:8008/patroni | jq .
 ```
 
 The master db is accessible on localhost:5000 and the replicas on 5001
+
 ```
 psql -p 5000
 ```
 
-
-
 ### Staging
 
 The staging setup has been tested with docker-machine on AWS and Digital Ocean. You will find a sample deploy script included in the scripts folder for aws deployment.
+
+#### Environment variables
+
+The staging setup is slightly different to the test stack in that each dbnode expects its own env file to be present at the root of the repo e.g. db-1.env
+
+The absolute minimum setup required to get the stack up is a combination of the inline environment variables from ```docker-stack.test.yml``` and those in ```test.env.tmpl```. 
+
+For full configuration options consult the patroni documentation.
 
 #### AWS
 
@@ -100,3 +135,52 @@ docker-machine create
   ```
 
 The rest of the stack setup is identical to the docker commands run in the aws deploy script.
+
+
+#### Virtualbox
+
+Make sure you have allocated enough RAM to run three nodes locally and then run
+
+```
+docker-machine create --driver virtualbox node-name
+```
+
+for each node.
+
+### Deploying the stack
+
+Make sure are executing these commands in the context of your node manager:
+
+```
+eval $(docker-machine env db-1)
+```
+
+To delloy your stack run
+
+```
+docker stack deploy -c docker-stack.yml pg_cluster
+```
+
+To check the state of your services run
+
+```
+docker service ls
+```
+
+For logs run:
+```
+docker service logs pg_cluster_haproxy 
+```
+
+### Cleanup
+
+Remove the hosts:
+```
+docker-machine rm db-1 db-2 db-3
+```
+
+Reset your docker environment:
+
+```
+eval $(docker-machine env --unset)
+```
