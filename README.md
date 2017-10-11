@@ -54,7 +54,7 @@ Patroni will not boot without these environment variables present.
 Run the test suite with
 
 ```
-bash scripts/run_tests.sh [-a to keep the stack up]
+scripts/run_tests.sh [-a to keep the stack up]
 ```
 
 The test setup also includes the pagila test dataset. See the steps in the test script for more details on how to load it.
@@ -104,7 +104,7 @@ For full configuration options consult the patroni documentation.
 For deploying on AWS you will need aws cli installed, jq for json parsing and you will need to have your AWS credentials set. Docker machine will pick up on the standard aws environment variables.
 
 ```
-bash scripts/deploy_aws.sh
+scripts/deploy_aws.sh
 ```
 
 With aws there are a lot of user specific variables which may prevent the script from working out of the box. Please consult the docker-machine aws plugin docs for more on how to configure your local environment.
