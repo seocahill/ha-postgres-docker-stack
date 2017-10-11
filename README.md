@@ -149,7 +149,7 @@ for each node.
 
 ### Deploying the stack
 
-Make sure are executing these commands in the context of your node manager:
+Make sure you are executing these commands in the context of your node manager:
 
 ```
 eval $(docker-machine env db-1)
