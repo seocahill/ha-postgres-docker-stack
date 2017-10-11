@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/bash
 
 # For testing create the dbs network externally and allow other containers to attach 
 docker network create -d overlay --attachable dbs
