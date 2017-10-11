@@ -25,5 +25,4 @@ pickle-email-*.html
 .powenv
 public
 config/my-certs
-.aliases
 wal-e
