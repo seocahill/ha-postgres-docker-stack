@@ -1,13 +1,13 @@
 #!/bin/bash
 
-export AWS_DEFAULT_REGION="eu-west-1"  
+export AWS_DEFAULT_REGION="eu-west-1"
 
-for vm in db-1 db-2 db-3; do 
+for vm in db-1 db-2 db-3; do
   docker-machine create --driver amazonec2 --amazonec2-region eu-west-1 $vm;
   docker-machine ssh $vm 'sudo usermod -a -G docker ubuntu';
 done
 
-# lookup docker machine security group 
+# lookup docker machine security group
 AWS_SGID=$(aws ec2 describe-security-groups --filter "Name=group-name,Values=docker-machine" | jq -sr '.[].SecurityGroups[].GroupId')
 
 # update security group to open required ports for swarm mode
