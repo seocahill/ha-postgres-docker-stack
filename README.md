@@ -1,6 +1,10 @@
 # HA Postgresql cluster on docker
 
-This is a docker compose file and some helper scripts to demonstrate how to deploy a highly available postgres cluster with automatic failover using docker swarm.
+This is a docker compose file and some helper scripts to demonstrate how to deploy a highly available postgres cluster with automatic failover using docker swarm. 
+
+I've written some blog posts that explain what's happening here in more depth, you can find them here:
+- [part 1](https://blog.seocahill.com/docker-postgres-cluster-with-high-availability-and-disaster-recovery)
+- [part 2](https://blog.seocahill.com/docker-postgres-cluster-with-high-availability-and-disaster-recovery-part-2)
 
 The complete stack is:
 
