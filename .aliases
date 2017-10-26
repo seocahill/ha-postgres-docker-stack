@@ -25,10 +25,7 @@ bkt:
   command: docker run -t -v ${PWD}/wal-e:/etc/wal-e -i seocahill/pg-restore-test:latest
 
 cvms: 
-  command: "for vm in db-1 db-2 db-3; do 
-    docker-machine create --driver amazonec2 --amazonec2-region eu-west-1 $vm && 
-    docker-machine ssh $vm 'sudo usermod -a -G docker ubuntu';
-    done"
+  command: "for vm in db-1 db-2 db-3; do docker-machine create --driver virtualbox $vm;done"
 
 prms:
   command: 'for vm in $@; do docker-machine ssh $vm "docker system prune --volumes";done'
