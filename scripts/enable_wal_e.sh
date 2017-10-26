@@ -1,3 +1,5 @@
+#!/bin/bash
+
 # find the ip of the manager
 HOST_IP=`docker-machine ip $0`
 
