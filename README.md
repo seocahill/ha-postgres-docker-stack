@@ -26,6 +26,9 @@ Documentation:
 - [patroni](https://patroni.readthedocs.io/en/latest/index.html)
 - [docker swarm mode](https://docs.docker.com/engine/swarm/)
 
+
+[![asciicast](https://asciinema.org/a/8raWQiIA4bAVxsuLsjw7O84U9.png)](https://asciinema.org/a/8raWQiIA4bAVxsuLsjw7O84U9?size=medium&speed=2)
+
 ### Test / Development 
 
 Use the ```docker-stack.test.yml``` when running the suite or testing the stack on docker for mac for example.
